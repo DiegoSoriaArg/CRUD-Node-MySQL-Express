@@ -1,7 +1,20 @@
 import {pool} from "../db.js";
 
-export const getEmployes = (req, res) => {
-    res.send("Obteniendo empleados");
+export const getEmployes = async (req, res) => {
+    const [rows] = await pool.query("SELECT * FROM empleados");
+    res.json(rows);
+};
+
+export const getEmploye = async (req, res) => {
+    const { id } = req.params;
+    const [rows] = await pool.query("SELECT * FROM empleados WHERE id = ?", [id]);
+    if(rows.length <= 0){
+        res.status(404).json({
+            message: "El empleado no existe en la base de datos!"
+        });
+    } else {
+        res.json(rows[0]);
+    }
 };
 
 export const createEmployes = async (req, res) => {
@@ -14,10 +27,27 @@ export const createEmployes = async (req, res) => {
     });
 };
 
-export const editEmployes = (req, res) => {
-    res.send("Actualizando empleados");
+export const deleteEmployes = async (req, res) => {
+    const { id } = req.params;
+    const [result] = await pool.query("DELETE FROM empleados WHERE id = ?", [id]);
+    if(result.affectedRows <= 0){
+        res.status(404).json({
+            message: "Empleado no encontrado"
+        });
+    }
+
+    res.sendStatus(204);
 };
 
-export const deleteEmployes = (req, res) => {
-    res.send("Eliminando empleados");
+export const editEmployes = async (req, res) => {
+    const {id} = req.params;
+    const {nombre, salario} = req.body;
+    const [result] = await pool.query("UPDATE empleados SET nombre = IFNULL(?, nombre), salario = IFNULL(?, salario) WHERE id = ?", [nombre, salario, id]);
+    if(result.affectedRows <= 0){
+        res.status(404).json({
+            message: "Empleado no encontrado"
+        });
+    }
+    const [rows] = await pool.query("SELECT * FROM empleados WHERE id = ?", [id]);
+    res.json(rows[0]);
 };

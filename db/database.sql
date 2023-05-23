@@ -18,3 +18,5 @@ INSERT INTO empleados VALUES
     (4, "yefry", 1000);
 
 SELECT * FROM empleados;
+
+DELETE FROM empleados WHERE id = 2;
